@@ -4,40 +4,40 @@
 
 @layer base {
   :root {
-    /* Primary - Azul Tech */
+    /* Primary - Azul Tech (mais vibrante) */
     --primary: 217 91% 60%;
-    --primary-hover: 217 83% 53%;
-    --primary-light: 217 95% 68%;
+    --primary-hover: 217 91% 68%;
+    --primary-light: 217 95% 72%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Roxo Premium */
+    /* Secondary - Roxo Premium (mais vibrante) */
     --secondary: 258 90% 66%;
-    --secondary-hover: 258 84% 60%;
-    --secondary-light: 258 91% 71%;
+    --secondary-hover: 258 90% 72%;
+    --secondary-light: 258 91% 76%;
     --secondary-foreground: 0 0% 100%;
 
     /* Accent - Laranja Energia */
     --accent: 38 92% 50%;
-    --accent-hover: 32 95% 44%;
-    --accent-light: 43 96% 56%;
+    --accent-hover: 43 96% 56%;
+    --accent-light: 43 96% 62%;
     --accent-foreground: 0 0% 100%;
 
-    /* Backgrounds */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 16%;
+    /* Backgrounds - mais claros e vibrantes */
+    --background: 222 47% 5%;      /* slate-950 mais escuro */
+    --foreground: 210 40% 98%;     /* texto branco */
+    --card: 222 47% 11%;            /* slate-900 */
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 16%;
+    --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
 
-    /* Borders & Inputs */
-    --border: 215 28% 17%;
-    --input: 215 28% 17%;
+    /* Borders & Inputs - mais visíveis */
+    --border: 215 28% 25%;          /* mais claro */
+    --input: 222 47% 16%;           /* slate-800 */
     --ring: 217 91% 60%;
 
-    /* Muted */
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 16% 47%;
+    /* Muted - mais contraste */
+    --muted: 222 47% 16%;           /* slate-800 */
+    --muted-foreground: 215 20% 65%; /* text-gray-400 mais claro */
 
     /* Destructive */
     --destructive: 0 84% 60%;
@@ -89,5 +89,62 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Melhorias de tema dark - cores mais vibrantes */
+@layer utilities {
+  /* Backgrounds mais vibrantes */
+  .bg-slate-950 {
+    background-color: rgb(2 6 23) !important; /* #020617 */
+  }
+  .bg-slate-900 {
+    background-color: rgb(15 23 42) !important; /* #0F172A */
+  }
+  .bg-slate-800 {
+    background-color: rgb(30 41 59) !important; /* #1E293B */
+  }
+  .bg-slate-700 {
+    background-color: rgb(51 65 85) !important; /* #334155 */
+  }
+
+  /* Borders mais visíveis */
+  .border-slate-800 {
+    border-color: rgb(51 65 85 / 0.6) !important;
+  }
+  .border-slate-700 {
+    border-color: rgb(71 85 105 / 0.7) !important;
+  }
+
+  /* Text colors mais vibrantes */
+  .text-gray-300 {
+    color: rgb(209 213 219) !important; /* mais claro */
+  }
+  .text-gray-400 {
+    color: rgb(156 163 175) !important; /* mais claro */
+  }
+
+  /* Cards com mais contraste */
+  .card-enhanced {
+    background: linear-gradient(135deg, rgb(15 23 42) 0%, rgb(30 41 59) 100%);
+    border: 1px solid rgb(51 65 85 / 0.6);
+  }
+
+  /* Stats cards com mais vibração */
+  .stats-blue {
+    background: linear-gradient(135deg, rgb(30 58 138 / 0.5) 0%, rgb(30 64 175 / 0.4) 100%);
+    border-color: rgb(59 130 246 / 0.6);
+  }
+  .stats-purple {
+    background: linear-gradient(135deg, rgb(88 28 135 / 0.5) 0%, rgb(107 33 168 / 0.4) 100%);
+    border-color: rgb(139 92 246 / 0.6);
+  }
+  .stats-green {
+    background: linear-gradient(135deg, rgb(20 83 45 / 0.5) 0%, rgb(22 101 52 / 0.4) 100%);
+    border-color: rgb(34 197 94 / 0.6);
+  }
+  .stats-orange {
+    background: linear-gradient(135deg, rgb(154 52 18 / 0.5) 0%, rgb(194 65 12 / 0.4) 100%);
+    border-color: rgb(249 115 22 / 0.6);
   }
 }

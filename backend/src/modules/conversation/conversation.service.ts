@@ -7,6 +7,7 @@ import {
   ConversationStatus,
   MessageRole,
   Message,
+  UserLevel,
 } from '@prisma/client';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { SendMessageDto } from './dto/send-message.dto';
@@ -16,12 +17,18 @@ import {
   ConversationListItemDto,
 } from './dto/conversation-response.dto';
 import { CompleteConversationResponseDto } from './dto/complete-conversation.dto';
+import { GroqFeedbackService } from '../groq/feedback/groq-feedback.service';
+import { XpCalculatorService } from '../gamification/xp-calculator.service';
 
 @Injectable()
 export class ConversationService {
   private readonly logger = new Logger(ConversationService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private groqFeedback: GroqFeedbackService,
+    private xpCalculator: XpCalculatorService,
+  ) {}
 
   /**
    * Create new conversation
@@ -167,7 +174,6 @@ export class ConversationService {
 
   /**
    * Complete conversation and calculate feedback
-   * For now, returns mock feedback. Will be replaced with AI feedback in Phase 2
    */
   async completeConversation(
     conversationId: string,
@@ -182,6 +188,23 @@ export class ConversationService {
       );
     }
 
+    // Get user info for XP calculation
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        level: true,
+        streak: true,
+        name: true,
+      },
+    });
+
+    if (!user) {
+      throw new BusinessException(
+        MappedsReturnsEnum.USER_NOT_FOUND,
+        'User not found',
+      );
+    }
+
     // Calculate conversation duration (in seconds)
     const firstMessage = conversation.messages[0];
     const lastMessage = conversation.messages[conversation.messages.length - 1];
@@ -190,41 +213,49 @@ export class ConversationService {
         1000,
     );
 
-    // Mock feedback for now (will be replaced with AI in Phase 2)
-    const mockFeedback = {
-      grammarScore: 75,
-      vocabularyScore: 80,
-      fluencyScore: 70,
-      overallScore: 75,
-      grammarErrors: [],
-      suggestions: ['Great job! Keep practicing.'],
-      strengths: ['Good vocabulary usage', 'Clear communication'],
-    };
+    // Get user messages for analysis
+    const userMessages = conversation.messages
+      .filter((m) => m.role === MessageRole.USER)
+      .map((m) => m.content)
+      .join('\n');
 
-    const xpEarned = mockFeedback.overallScore; // Simple XP calculation
+    // Get AI feedback with user level
+    const feedback = await this.groqFeedback.analyzeSpeaking(
+      userMessages,
+      conversation.topicTitle,
+      user.level as UserLevel,
+    );
+
+    // Calculate XP using proper formula
+    const xpEarned = this.xpCalculator.calculateXP(
+      feedback,
+      duration,
+      user.streak,
+      user.level,
+    );
 
     // Update conversation
     const updatedConversation = await this.prisma.conversation.update({
       where: { id: conversationId },
       data: {
         status: ConversationStatus.COMPLETED,
-        score: mockFeedback.overallScore,
+        score: feedback.overallScore,
         xpEarned,
         duration,
       },
     });
 
-    // Create feedback record
+    // Create feedback record with all fields
     await this.prisma.conversationFeedback.create({
       data: {
         conversationId,
-        grammarScore: mockFeedback.grammarScore,
-        vocabularyScore: mockFeedback.vocabularyScore,
-        fluencyScore: mockFeedback.fluencyScore,
-        overallScore: mockFeedback.overallScore,
-        grammarErrors: mockFeedback.grammarErrors,
-        suggestions: mockFeedback.suggestions,
-        strengths: mockFeedback.strengths,
+        grammarScore: feedback.vocabularyScore,
+        vocabularyScore: feedback.vocabularyScore,
+        fluencyScore: feedback.fluencyScore,
+        overallScore: feedback.overallScore,
+        grammarErrors: feedback.grammarErrors as any,
+        suggestions: feedback.suggestions,
+        strengths: feedback.strengths,
       },
     });
 
@@ -243,9 +274,9 @@ export class ConversationService {
     return {
       conversationId,
       status: ConversationStatus.COMPLETED,
-      score: mockFeedback.overallScore,
+      score: feedback.overallScore,
       xpEarned,
-      feedback: mockFeedback,
+      feedback,
     };
   }
 

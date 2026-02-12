@@ -11,6 +11,7 @@ import { UserModule } from './modules/user/user.module';
 import { ConversationModule } from './modules/conversation/conversation.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { TopicModule } from './modules/topic/topic.module';
+import { GroqModule } from './modules/groq/groq.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
 @Module({
@@ -29,6 +30,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     ConversationModule,
     StorageModule,
     TopicModule,
+    GroqModule,
   ],
   controllers: [AppController],
   providers: [
