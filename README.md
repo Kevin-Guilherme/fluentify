@@ -82,8 +82,8 @@ Fluentify é uma plataforma moderna de ensino de idiomas que utiliza IA conversa
 
 ## 📊 Progresso do Projeto
 
-**Status Atual:** MVP ~75% Completo
-**Última Atualização:** 11/02/2026
+**Status Atual:** MVP ~85% Completo
+**Última Atualização:** 12/02/2026
 
 ### ✅ Fases Completas
 
@@ -142,11 +142,11 @@ Fluentify é uma plataforma moderna de ensino de idiomas que utiliza IA conversa
 
 ### ⏳ Fases Pendentes
 
-#### FASE 4: Gamificação & Polish (0%)
-- [ ] Sistema XP & Level
-- [ ] Sistema Streak
-- [ ] Onboarding Flow
-- [ ] Responsividade Mobile
+#### FASE 4: Gamificação & Polish (100%) ✅
+- [x] Sistema XP & Level
+- [x] Sistema Streak
+- [x] Onboarding Flow
+- [x] Responsividade Mobile
 
 #### FASE 5: Deploy & Infra (0%)
 - [ ] Deploy Backend (Fly.io)
@@ -328,10 +328,13 @@ fluentify/
 
 ## 🗺️ Roadmap
 
-### v0.1.0 (Atual - MVP 75%)
+### v0.1.0 (Atual - MVP 85%)
 - [x] Backend core completo
 - [x] Integração IA funcional
 - [x] Frontend com todas as páginas
+- [x] Sistema de gamificação (XP, Streak, Level)
+- [x] Onboarding flow
+- [x] Mobile responsive
 - [x] Design system implementado
 
 ### v0.2.0 (Próximo - Gamificação)

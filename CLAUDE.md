@@ -1172,7 +1172,7 @@ export const api = new ApiClient();
 
 ### FASE 4: Gamificação & Polish (12h)
 
-#### - [ ] 4.1 Sistema XP & Level
+#### - [x] 4.1 Sistema XP & Level
 **Descrição:** Cálculo de XP, progressão de nível e notificações de level-up.
 **Arquivos:**
 ```
@@ -1200,7 +1200,7 @@ Níveis:
 - Animação de +XP no frontend
 - Modal de level-up quando user sobe de nível
 
-#### - [ ] 4.2 Sistema Streak
+#### - [x] 4.2 Sistema Streak
 **Descrição:** Rastreamento de dias consecutivos de prática.
 **Arquivos:**
 ```
@@ -1220,7 +1220,7 @@ frontend/components/shared/streak-indicator.tsx
 - Exibido no header com ícone de fogo
 - Animação quando streak aumenta
 
-#### - [ ] 4.3 Onboarding Flow
+#### - [x] 4.3 Onboarding Flow
 **Descrição:** Fluxo de primeira experiência para novos usuários.
 **Arquivos:**
 ```
@@ -1242,7 +1242,7 @@ frontend/components/onboarding/step-goals.tsx
 - Salva preferências na API
 - Redirect para dashboard ao finalizar
 
-#### - [ ] 4.4 Responsividade Mobile
+#### - [x] 4.4 Responsividade Mobile
 **Descrição:** Ajustes finais de responsividade em todas as páginas.
 **Arquivos:**
 ```
