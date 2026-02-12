@@ -98,9 +98,9 @@ FASE 6 (Testes & Polish)
 
 ---
 
-### FASE 0: Setup Inicial (3h)
+### FASE 0: Setup Inicial (3h) - ✅ COMPLETA
 
-#### - [ ] 0.1 Scaffold Backend
+#### - [x] 0.1 Scaffold Backend
 **Descrição:** Criar projeto NestJS com estrutura de pastas conforme spec.
 **Arquivos:**
 ```
@@ -142,7 +142,7 @@ backend/
 - Estrutura de pastas criada
 - `GET /health` retorna 200
 
-#### - [ ] 0.2 Scaffold Frontend
+#### - [x] 0.2 Scaffold Frontend
 **Descrição:** Criar projeto Next.js 14+ com App Router, Tailwind CSS, shadcn/ui.
 **Arquivos:**
 ```
@@ -184,7 +184,7 @@ frontend/
 - shadcn/ui inicializado com componentes base (button, card, input, dialog)
 - CSS variables do design system no `globals.css`
 
-#### - [ ] 0.3 Tooling & Config
+#### - [x] 0.3 Tooling & Config
 **Descrição:** ESLint, Prettier, Git hooks (husky + lint-staged) em ambos os projetos.
 **Arquivos:**
 ```
@@ -199,7 +199,7 @@ frontend/.prettierrc
 - `npm run lint` passa em ambos os projetos
 - Pre-commit hook executa lint automaticamente
 
-#### - [ ] 0.4 Variáveis de Ambiente
+#### - [x] 0.4 Variáveis de Ambiente
 **Descrição:** Configurar `.env.example` e validação de env vars com `@nestjs/config` + Zod.
 **Arquivos:**
 ```
@@ -256,9 +256,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
 ---
 
-### FASE 1: Backend Core (35h)
+### FASE 1: Backend Core (35h) - ✅ COMPLETA
 
-#### - [ ] 1.1 Prisma Schema Completo
+#### - [x] 1.1 Prisma Schema Completo
 **Descrição:** Schema completo com todos os models, enums, relations e @@map para snake_case.
 **Arquivos:**
 ```
