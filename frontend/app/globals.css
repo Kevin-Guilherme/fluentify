@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary - Azul Tech */
+    --primary: 217 91% 60%;
+    --primary-hover: 217 83% 53%;
+    --primary-light: 217 95% 68%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Roxo Premium */
+    --secondary: 258 90% 66%;
+    --secondary-hover: 258 84% 60%;
+    --secondary-light: 258 91% 71%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Accent - Laranja Energia */
+    --accent: 38 92% 50%;
+    --accent-hover: 32 95% 44%;
+    --accent-light: 43 96% 56%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Backgrounds */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 16%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 16%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Borders & Inputs */
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 217 91% 60%;
+
+    /* Muted */
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Radius */
+    --radius: 0.75rem;
+  }
+
+  [data-theme="light"] {
+    --primary: 217 83% 53%;
+    --primary-hover: 217 91% 45%;
+    --primary-light: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 258 84% 60%;
+    --secondary-hover: 258 91% 51%;
+    --secondary-light: 258 90% 66%;
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 17 88% 40%;
+    --accent-hover: 17 91% 33%;
+    --accent-light: 24 96% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --background: 0 0% 98%;
+    --foreground: 240 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 217 83% 53%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "fluentify",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "format:backend": "cd backend && npm run format",
+    "format:frontend": "cd frontend && npm run format",
+    "format": "npm run format:backend && npm run format:frontend",
+    "prisma:generate": "cd backend && npm run prisma:generate",
+    "prisma:push": "cd backend && npm run prisma:push",
+    "prisma:seed": "cd backend && npm run prisma:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

@@ -1,0 +1,180 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { BusinessException } from '../../shared/exceptions/business.exception';
+import { MappedsReturnsEnum } from '../../shared/enums/mapped-returns.enum';
+
+@Injectable()
+export class StorageService {
+  private readonly logger = new Logger(StorageService.name);
+  private readonly s3Client: S3Client;
+  private readonly bucketName: string;
+  private readonly publicUrl: string;
+
+  constructor(private configService: ConfigService) {
+    const accountId = this.configService.get<string>('R2_ACCOUNT_ID');
+    const accessKeyId = this.configService.get<string>('R2_ACCESS_KEY_ID');
+    const secretAccessKey = this.configService.get<string>(
+      'R2_SECRET_ACCESS_KEY',
+    );
+    this.bucketName = this.configService.get<string>('R2_BUCKET_NAME') || '';
+    this.publicUrl = this.configService.get<string>('R2_PUBLIC_URL') || '';
+
+    if (!accountId || !accessKeyId || !secretAccessKey) {
+      this.logger.warn(
+        'R2 credentials not configured. Storage features will be disabled.',
+      );
+    }
+
+    // Cloudflare R2 endpoint format: https://<account_id>.r2.cloudflarestorage.com
+    const endpoint = `https://${accountId}.r2.cloudflarestorage.com`;
+
+    this.s3Client = new S3Client({
+      region: 'auto',
+      endpoint,
+      credentials: {
+        accessKeyId: accessKeyId || '',
+        secretAccessKey: secretAccessKey || '',
+      },
+    });
+  }
+
+  /**
+   * Upload audio file to R2
+   * @param file Buffer with audio data
+   * @param conversationId ID of the conversation
+   * @param fileName Original file name
+   * @returns Object with URL, key, and bucket
+   */
+  async uploadAudio(
+    file: Buffer,
+    conversationId: string,
+    fileName: string,
+  ): Promise<{ url: string; key: string; bucket: string }> {
+    try {
+      // Generate unique key: audio/{conversationId}/{timestamp}-{fileName}
+      const timestamp = Date.now();
+      const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const key = `audio/${conversationId}/${timestamp}-${sanitizedFileName}`;
+
+      // Upload to R2
+      const command = new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        Body: file,
+        ContentType: this.getContentType(fileName),
+      });
+
+      await this.s3Client.send(command);
+
+      // Generate public URL (if R2_PUBLIC_URL is configured)
+      const url = this.publicUrl
+        ? `${this.publicUrl}/${key}`
+        : await this.getPresignedUrl(key, 3600); // 1 hour expiry as fallback
+
+      this.logger.log(`Audio uploaded successfully: ${key}`);
+
+      return {
+        url,
+        key,
+        bucket: this.bucketName,
+      };
+    } catch (error) {
+      this.logger.error('Failed to upload audio', error);
+      throw new BusinessException(
+        MappedsReturnsEnum.STORAGE_ERROR,
+        'Failed to upload audio file',
+      );
+    }
+  }
+
+  /**
+   * Get presigned URL for accessing a file
+   * @param key File key in R2
+   * @param expiresIn Expiration time in seconds (default: 3600 = 1 hour)
+   * @returns Presigned URL
+   */
+  async getPresignedUrl(key: string, expiresIn = 3600): Promise<string> {
+    try {
+      const command = new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+      });
+
+      const url = await getSignedUrl(this.s3Client, command, { expiresIn });
+
+      this.logger.log(`Presigned URL generated for: ${key}`);
+
+      return url;
+    } catch (error) {
+      this.logger.error('Failed to generate presigned URL', error);
+      throw new BusinessException(
+        MappedsReturnsEnum.STORAGE_ERROR,
+        'Failed to generate download URL',
+      );
+    }
+  }
+
+  /**
+   * Delete audio file from R2
+   * @param key File key in R2
+   */
+  async deleteAudio(key: string): Promise<void> {
+    try {
+      const command = new DeleteObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+      });
+
+      await this.s3Client.send(command);
+
+      this.logger.log(`Audio deleted successfully: ${key}`);
+    } catch (error) {
+      this.logger.error('Failed to delete audio', error);
+      throw new BusinessException(
+        MappedsReturnsEnum.STORAGE_ERROR,
+        'Failed to delete audio file',
+      );
+    }
+  }
+
+  /**
+   * Get content type based on file extension
+   */
+  private getContentType(fileName: string): string {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+
+    const contentTypes: Record<string, string> = {
+      mp3: 'audio/mpeg',
+      wav: 'audio/wav',
+      ogg: 'audio/ogg',
+      webm: 'audio/webm',
+      m4a: 'audio/mp4',
+    };
+
+    return contentTypes[ext || ''] || 'audio/mpeg';
+  }
+
+  /**
+   * Validate file size (max 10MB for audio)
+   */
+  validateFileSize(fileSize: number): boolean {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    return fileSize <= maxSize;
+  }
+
+  /**
+   * Validate audio file extension
+   */
+  validateAudioFile(fileName: string): boolean {
+    const validExtensions = ['mp3', 'wav', 'ogg', 'webm', 'm4a'];
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    return validExtensions.includes(ext || '');
+  }
+}
