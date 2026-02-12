@@ -2,9 +2,11 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'FLUENT';
   xp: number;
   streak: number;
+  goal?: string;
+  onboardingCompleted: boolean;
   createdAt: string;
   updatedAt: string;
 }

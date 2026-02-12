@@ -1,0 +1,60 @@
+# Onboarding Flow - Estrutura de Arquivos
+
+## Frontend
+
+### Páginas
+frontend/app/(protected)/onboarding/
+├── page.tsx                    # Main wizard com multi-step state
+└── README.md                   # Documentação do fluxo
+
+### Componentes
+frontend/components/onboarding/
+├── index.ts                    # Barrel exports
+├── step-name.tsx               # Step 1: Welcome + Nome
+├── step-level.tsx              # Step 2: Seleção de Nível
+├── step-goals.tsx              # Step 3: Seleção de Objetivo
+└── progress-bar.tsx            # Progress indicator animado
+
+### Hooks
+frontend/hooks/
+└── useOnboarding.ts            # Hook de detecção e auto-redirect
+
+### API
+frontend/lib/api/
+└── client.ts                   # +PATCH method adicionado
+
+### Types
+frontend/types/
+└── index.ts                    # +goal, +onboardingCompleted no User
+
+### Layout
+frontend/app/(protected)/
+└── layout.tsx                  # +useOnboarding() integration
+
+---
+
+## Backend
+
+### Database
+backend/prisma/
+├── schema.prisma               # +goal, +onboardingCompleted no User model
+└── migrations/
+    └── 20260212000000_add_onboarding_fields/
+        └── migration.sql       # ALTER TABLE users ADD COLUMN...
+
+### DTOs
+backend/src/modules/user/dto/
+└── update-user.dto.ts          # +level, +goal, +onboardingCompleted
+
+### Controllers
+backend/src/modules/user/
+└── user.controller.ts          # PATCH /users/me (já existente)
+
+---
+
+## Documentação
+
+.
+├── ONBOARDING_IMPLEMENTATION.md   # Guia completo de implementação
+└── ONBOARDING_FILES.txt           # Este arquivo (estrutura visual)
+

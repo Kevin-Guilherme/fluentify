@@ -49,15 +49,15 @@ export default function TopicsPage() {
         streak={stats?.streak || 0}
         level={stats?.level || 'Beginner'}
       />
-      <div className="p-8 space-y-6">
+      <div className="p-4 md:p-8 space-y-4 md:space-y-6">
         {/* Difficulty Filter */}
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-2 md:gap-3 flex-wrap">
           {difficulties.map((difficulty) => (
             <button
               key={difficulty}
               onClick={() => setSelectedDifficulty(difficulty)}
               className={cn(
-                'px-5 py-2.5 rounded-xl font-semibold transition-all duration-300',
+                'px-3 md:px-5 py-2 md:py-2.5 rounded-xl text-sm md:text-base font-semibold transition-all duration-300 touch-manipulation',
                 selectedDifficulty === difficulty
                   ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-105'
                   : 'bg-slate-800 border border-slate-700 text-gray-300 hover:bg-slate-700 hover:border-slate-600 hover:text-white hover:scale-105'
@@ -74,26 +74,26 @@ export default function TopicsPage() {
             <div className="w-16 h-16 border-8 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {topics?.map((topic) => (
               <Card
                 key={topic.id}
-                className="p-6 cursor-pointer bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-slate-700 transition-all duration-300 hover:scale-105 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/20 hover:from-blue-900/30 hover:to-purple-900/30"
+                className="p-5 md:p-6 cursor-pointer bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-slate-700 transition-all duration-300 hover:scale-105 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/20 hover:from-blue-900/30 hover:to-purple-900/30 active:scale-95 touch-manipulation min-h-[180px] md:min-h-[200px]"
                 onClick={() => createConversation.mutate(topic.id)}
               >
-                <div className="text-6xl mb-4 transform transition-transform duration-300 hover:scale-110">
+                <div className="text-5xl md:text-6xl mb-3 md:mb-4 transform transition-transform duration-300 hover:scale-110">
                   {topic.emoji}
                 </div>
-                <h3 className="font-bold text-white text-lg mb-2">
+                <h3 className="font-bold text-white text-base md:text-lg mb-2">
                   {topic.title}
                 </h3>
-                <p className="text-sm text-gray-300 mb-4 line-clamp-2 leading-relaxed">
+                <p className="text-xs md:text-sm text-gray-300 mb-3 md:mb-4 line-clamp-2 leading-relaxed">
                   {topic.description}
                 </p>
                 <div className="flex items-center justify-between">
                   <span
                     className={cn(
-                      'text-xs font-bold px-3 py-1.5 rounded-lg',
+                      'text-[10px] md:text-xs font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-lg',
                       topic.difficulty === 'BEGINNER' && 'bg-green-500/20 text-green-400 border border-green-500/40',
                       topic.difficulty === 'INTERMEDIATE' && 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40',
                       topic.difficulty === 'ADVANCED' && 'bg-red-500/20 text-red-400 border border-red-500/40'
@@ -101,7 +101,7 @@ export default function TopicsPage() {
                   >
                     {topic.difficulty}
                   </span>
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  <span className="text-[10px] md:text-xs font-semibold text-gray-400 uppercase tracking-wide">
                     {topic.category}
                   </span>
                 </div>
@@ -111,10 +111,10 @@ export default function TopicsPage() {
         )}
 
         {topics?.length === 0 && !isLoading && (
-          <div className="text-center py-20">
-            <div className="text-8xl mb-6">🔍</div>
-            <p className="text-xl font-semibold text-gray-300 mb-2">No topics found</p>
-            <p className="text-gray-400">Try selecting a different difficulty level.</p>
+          <div className="text-center py-12 md:py-20">
+            <div className="text-6xl md:text-8xl mb-4 md:mb-6">🔍</div>
+            <p className="text-lg md:text-xl font-semibold text-gray-300 mb-2">No topics found</p>
+            <p className="text-sm md:text-base text-gray-400">Try selecting a different difficulty level.</p>
           </div>
         )}
       </div>

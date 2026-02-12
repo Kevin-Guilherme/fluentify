@@ -45,18 +45,18 @@ export function StatsCards({ xp, streak, level, totalConversations }: StatsCards
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
       {stats.map((stat) => (
         <Card
           key={stat.label}
-          className={`${stat.className} border p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl`}
+          className={`${stat.className} border p-4 md:p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl`}
         >
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-gray-200">{stat.label}</span>
-            <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
+          <div className="flex items-center justify-between mb-2 md:mb-4">
+            <span className="text-xs md:text-sm font-medium text-gray-200">{stat.label}</span>
+            <stat.icon className={`w-4 h-4 md:w-6 md:h-6 ${stat.iconColor}`} />
           </div>
-          <p className="text-4xl font-bold text-white mb-1">{stat.value}</p>
-          <div className={`text-xs font-semibold ${stat.textColor}`}>
+          <p className="text-2xl md:text-4xl font-bold text-white mb-1">{stat.value}</p>
+          <div className={`text-xs font-semibold ${stat.textColor} hidden sm:block`}>
             {stat.label === 'Total XP' && 'Keep going!'}
             {stat.label === 'Streak' && '🔥 On fire!'}
             {stat.label === 'Level' && '⭐ Rising up'}

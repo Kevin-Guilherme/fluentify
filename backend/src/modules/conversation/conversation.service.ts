@@ -19,6 +19,8 @@ import {
 import { CompleteConversationResponseDto } from './dto/complete-conversation.dto';
 import { GroqFeedbackService } from '../groq/feedback/groq-feedback.service';
 import { XpCalculatorService } from '../gamification/xp-calculator.service';
+import { StreakService } from '../user/streak.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class ConversationService {
@@ -28,6 +30,8 @@ export class ConversationService {
     private prisma: PrismaService,
     private groqFeedback: GroqFeedbackService,
     private xpCalculator: XpCalculatorService,
+    private streakService: StreakService,
+    private userService: UserService,
   ) {}
 
   /**
@@ -269,6 +273,20 @@ export class ConversationService {
       },
     });
 
+    // Update streak (do this after conversation is complete)
+    const streakResult = await this.streakService.updateStreak(userId);
+    this.logger.log(
+      `User ${userId} streak updated: ${streakResult.previousStreak} → ${streakResult.currentStreak}`,
+    );
+
+    // Check for level up
+    const levelUpResult = await this.userService.checkLevelUp(userId);
+    if (levelUpResult.leveledUp) {
+      this.logger.log(
+        `User ${userId} leveled up: ${levelUpResult.previousLevel} → ${levelUpResult.newLevel}`,
+      );
+    }
+
     this.logger.log(`Conversation ${conversationId} completed. XP earned: ${xpEarned}`);
 
     return {
@@ -277,6 +295,17 @@ export class ConversationService {
       score: feedback.overallScore,
       xpEarned,
       feedback,
+      streak: {
+        current: streakResult.currentStreak,
+        previous: streakResult.previousStreak,
+        continued: streakResult.streakContinued,
+        broken: streakResult.streakBroken,
+      },
+      levelUp: {
+        leveledUp: levelUpResult.leveledUp,
+        newLevel: levelUpResult.newLevel ?? undefined,
+        previousLevel: levelUpResult.previousLevel,
+      },
     };
   }
 

@@ -27,17 +27,19 @@ enum MessageRole {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  supabaseId    String    @unique @map("supabase_id")
-  email         String    @unique
-  name          String
-  avatarUrl     String?   @map("avatar_url")
-  level         UserLevel @default(BEGINNER)
-  xp            Int       @default(0)
-  streak        Int       @default(0)
-  lastActiveAt  DateTime? @map("last_active_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id                  String    @id @default(uuid())
+  supabaseId          String    @unique @map("supabase_id")
+  email               String    @unique
+  name                String
+  avatarUrl           String?   @map("avatar_url")
+  level               UserLevel @default(BEGINNER)
+  xp                  Int       @default(0)
+  streak              Int       @default(0)
+  goal                String?
+  onboardingCompleted Boolean   @default(false) @map("onboarding_completed")
+  lastActiveAt        DateTime? @map("last_active_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
 
   conversations Conversation[]
   achievements  UserAchievement[]

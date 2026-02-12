@@ -147,4 +147,31 @@
     background: linear-gradient(135deg, rgb(154 52 18 / 0.5) 0%, rgb(194 65 12 / 0.4) 100%);
     border-color: rgb(249 115 22 / 0.6);
   }
+
+  /* Mobile safe area - iOS notch/home indicator */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Touch manipulation para melhor resposta em mobile */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  /* Scroll suave para modais mobile */
+  @media (max-width: 768px) {
+    body {
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  /* Prevenir zoom indesejado em inputs mobile */
+  @media (max-width: 768px) {
+    input, textarea, select {
+      font-size: 16px !important;
+    }
+  }
 }

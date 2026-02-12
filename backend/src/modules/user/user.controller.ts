@@ -15,6 +15,7 @@ import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserStatsDto } from './dto/user-stats.dto';
 import { ConversationHistoryDto } from './dto/conversation-history.dto';
+import { UserProgressDto } from './dto/user-progress.dto';
 import { User } from '@prisma/client';
 
 @ApiTags('users')
@@ -66,5 +67,14 @@ export class UserController {
     pageSize: number,
   ): Promise<ConversationHistoryDto> {
     return this.userService.getConversationHistory(user.userId, page, pageSize);
+  }
+
+  /**
+   * GET /users/me/progress
+   * Get current user progress towards next level
+   */
+  @Get('me/progress')
+  async getMyProgress(@CurrentUser() user: any): Promise<UserProgressDto> {
+    return this.userService.getUserProgress(user.userId);
   }
 }

@@ -39,7 +39,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col h-screen sticky top-0">
+    <aside className="hidden md:flex w-64 bg-slate-900 border-r border-slate-800 flex-col h-screen sticky top-0">
       {/* Logo Section */}
       <div className="p-6 border-b border-slate-800">
         <Link href="/dashboard" className="block transform transition-transform duration-300 hover:scale-105">

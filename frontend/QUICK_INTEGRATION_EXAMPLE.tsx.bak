@@ -1,0 +1,355 @@
+/**
+ * QUICK INTEGRATION EXAMPLE
+ *
+ * This file shows how to integrate gamification components into a conversation page.
+ * Copy and adapt this code to your needs.
+ */
+
+'use client';
+
+import { useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { useGamification } from '@/hooks/useGamification';
+import { XpAnimation, LevelUpModal } from '@/components/shared';
+import { Button } from '@/components/ui/button';
+import { conversationsApi, usersApi } from '@/lib/api';
+
+interface ConversationPageProps {
+  params: { id: string };
+}
+
+export default function ConversationPage({ params }: ConversationPageProps) {
+  const router = useRouter();
+  const [isCompleting, setIsCompleting] = useState(false);
+
+  // Gamification hook
+  const {
+    state: gamificationState,
+    handleLevelUp,
+    handleXpGain,
+    closeLevelUpModal,
+    resetXpAnimation,
+  } = useGamification();
+
+  // Fetch current user stats
+  const { data: userStats, refetch: refetchStats } = useQuery({
+    queryKey: ['user-stats'],
+    queryFn: () => usersApi.getStats(),
+  });
+
+  // Complete conversation mutation
+  const completeMutation = useMutation({
+    mutationFn: () => conversationsApi.complete(params.id),
+    onSuccess: (data) => {
+      // data should include: { xpEarned, oldLevel, newLevel, leveledUp, newXp, newStreak }
+
+      const { xpEarned, oldLevel, newLevel, leveledUp } = data;
+
+      // Always show XP animation
+      handleXpGain(xpEarned);
+
+      // If user leveled up, show modal after XP animation
+      if (leveledUp) {
+        setTimeout(() => {
+          handleLevelUp(oldLevel, newLevel, xpEarned);
+        }, 1500); // Delay to let XP animation finish
+      }
+
+      // Refetch stats to update UI
+      refetchStats();
+
+      // Navigate to dashboard after 3 seconds
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 3000);
+    },
+    onError: (error) => {
+      console.error('Failed to complete conversation:', error);
+      setIsCompleting(false);
+    },
+  });
+
+  const handleCompleteConversation = () => {
+    setIsCompleting(true);
+    completeMutation.mutate();
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950">
+      {/* XP Animation - Shows when user gains XP */}
+      <XpAnimation
+        xpAmount={gamificationState.xpGained}
+        triggerKey={gamificationState.triggerKey}
+        onComplete={resetXpAnimation}
+      />
+
+      {/* Level Up Modal - Shows when user levels up */}
+      <LevelUpModal
+        isOpen={gamificationState.showLevelUpModal}
+        onClose={closeLevelUpModal}
+        oldLevel={gamificationState.oldLevel}
+        newLevel={gamificationState.newLevel}
+        xpGained={gamificationState.xpGained}
+      />
+
+      {/* Your conversation UI */}
+      <div className="container mx-auto p-8">
+        <h1 className="text-3xl font-bold text-white mb-6">Conversation</h1>
+
+        {/* Messages, audio recorder, feedback, etc. */}
+        {/* ... your existing conversation components ... */}
+
+        {/* Complete Button */}
+        <div className="mt-8 flex justify-center">
+          <Button
+            size="lg"
+            onClick={handleCompleteConversation}
+            disabled={isCompleting || completeMutation.isPending}
+          >
+            {isCompleting ? 'Completing...' : 'Complete Conversation'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * BACKEND INTEGRATION
+ *
+ * Your backend endpoint should return:
+ *
+ * POST /api/conversations/:id/complete
+ *
+ * Response:
+ * {
+ *   "conversationId": "uuid",
+ *   "score": 85,
+ *   "xpEarned": 92,
+ *   "oldLevel": "Beginner",
+ *   "newLevel": "Intermediate",
+ *   "leveledUp": true,
+ *   "newXp": 1050,
+ *   "newStreak": 8,
+ *   "streakIncreased": true
+ * }
+ *
+ * XP Calculation (backend):
+ *
+ * const baseXp = 20;
+ * const scoreBonus = Math.floor(score * 0.5); // 0-50 XP
+ * const messageBonus = Math.min(messageCount * 5, 30); // max 30 XP
+ * const totalXp = baseXp + scoreBonus + messageBonus;
+ *
+ * Level Calculation (backend):
+ *
+ * const calculateLevel = (xp: number): string => {
+ *   if (xp >= 5000) return 'Advanced';
+ *   if (xp >= 2500) return 'Intermediate';
+ *   return 'Beginner';
+ * };
+ *
+ * const oldLevel = calculateLevel(user.xp);
+ * const newXp = user.xp + xpEarned;
+ * const newLevel = calculateLevel(newXp);
+ * const leveledUp = oldLevel !== newLevel;
+ */
+
+/**
+ * ALTERNATIVE: Using React Query for Real-time Updates
+ */
+export function ConversationPageWithRealtime({ params }: ConversationPageProps) {
+  const { state, handleLevelUp, handleXpGain } = useGamification();
+
+  // Poll for updates every 5 seconds
+  const { data: conversation } = useQuery({
+    queryKey: ['conversation', params.id],
+    queryFn: () => conversationsApi.getById(params.id),
+    refetchInterval: 5000,
+    onSuccess: (data) => {
+      // Check if conversation was just completed
+      if (data.completedAt && !data.previouslyCompleted) {
+        handleXpGain(data.xpEarned);
+
+        if (data.leveledUp) {
+          setTimeout(() => {
+            handleLevelUp(data.oldLevel, data.newLevel, data.xpEarned);
+          }, 1500);
+        }
+      }
+    }
+  });
+
+  return (
+    <>
+      <XpAnimation {...state} />
+      <LevelUpModal {...state} />
+      {/* Your UI */}
+    </>
+  );
+}
+
+/**
+ * SIMPLER VERSION: Just XP Animation (No Level Up)
+ */
+export function SimpleConversationPage({ params }: ConversationPageProps) {
+  const [xpGained, setXpGained] = useState(0);
+  const [triggerKey, setTriggerKey] = useState(0);
+
+  const handleComplete = async () => {
+    const result = await conversationsApi.complete(params.id);
+
+    // Just show XP animation
+    setXpGained(result.xpEarned);
+    setTriggerKey(Date.now()); // Trigger animation
+  };
+
+  return (
+    <>
+      <XpAnimation
+        xpAmount={xpGained}
+        triggerKey={triggerKey}
+      />
+
+      <Button onClick={handleComplete}>
+        Complete
+      </Button>
+    </>
+  );
+}
+
+/**
+ * TESTING THE COMPONENTS
+ */
+export function GamificationTestPage() {
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [xpAmount, setXpAmount] = useState(0);
+  const [triggerKey, setTriggerKey] = useState(0);
+
+  return (
+    <div className="p-8 space-y-4">
+      <h1 className="text-2xl font-bold text-white">Gamification Test</h1>
+
+      {/* Test XP Animation */}
+      <div className="space-y-2">
+        <h2 className="text-lg text-white">XP Animation Test</h2>
+        <Button
+          onClick={() => {
+            setXpAmount(50);
+            setTriggerKey(Date.now());
+          }}
+        >
+          Trigger +50 XP
+        </Button>
+        <Button
+          onClick={() => {
+            setXpAmount(100);
+            setTriggerKey(Date.now());
+          }}
+        >
+          Trigger +100 XP
+        </Button>
+      </div>
+
+      {/* Test Level Up Modal */}
+      <div className="space-y-2">
+        <h2 className="text-lg text-white">Level Up Modal Test</h2>
+        <Button onClick={() => setShowLevelUp(true)}>
+          Show Level Up (Beginner → Intermediate)
+        </Button>
+      </div>
+
+      {/* Components */}
+      <XpAnimation
+        xpAmount={xpAmount}
+        triggerKey={triggerKey}
+      />
+
+      <LevelUpModal
+        isOpen={showLevelUp}
+        onClose={() => setShowLevelUp(false)}
+        oldLevel="Beginner"
+        newLevel="Intermediate"
+        xpGained={100}
+      />
+    </div>
+  );
+}
+
+/**
+ * COMPLETE EXAMPLE WITH ALL FEATURES
+ */
+export function CompleteGamificationExample() {
+  const {
+    state,
+    handleLevelUp,
+    handleXpGain,
+    closeLevelUpModal,
+    resetXpAnimation,
+  } = useGamification();
+
+  const simulateConversationComplete = () => {
+    // Simulate backend response
+    const mockResponse = {
+      xpEarned: 85,
+      oldLevel: 'Beginner',
+      newLevel: 'Intermediate',
+      leveledUp: true,
+    };
+
+    // Show XP animation
+    handleXpGain(mockResponse.xpEarned);
+
+    // If leveled up, show modal after animation
+    if (mockResponse.leveledUp) {
+      setTimeout(() => {
+        handleLevelUp(
+          mockResponse.oldLevel,
+          mockResponse.newLevel,
+          mockResponse.xpEarned
+        );
+      }, 1500);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      {/* XP Animation */}
+      <XpAnimation
+        xpAmount={state.xpGained}
+        triggerKey={state.triggerKey}
+        onComplete={resetXpAnimation}
+      />
+
+      {/* Level Up Modal */}
+      <LevelUpModal
+        isOpen={state.showLevelUpModal}
+        onClose={closeLevelUpModal}
+        oldLevel={state.oldLevel}
+        newLevel={state.newLevel}
+        xpGained={state.xpGained}
+      />
+
+      {/* Test Button */}
+      <Button
+        size="lg"
+        onClick={simulateConversationComplete}
+      >
+        Complete Conversation (Test)
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * EXPORT USAGE
+ *
+ * In your app/conversation/[id]/page.tsx:
+ *
+ * import CompleteGamificationExample from '@/path/to/this/file';
+ *
+ * export default function Page({ params }) {
+ *   return <CompleteGamificationExample />;
+ * }
+ */

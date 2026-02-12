@@ -161,26 +161,26 @@ export default function ConversationPage() {
         )}
       </Header>
 
-      <div className="p-8 max-w-5xl mx-auto">
-        <div className="space-y-6">
+      <div className="p-4 md:p-8 max-w-5xl mx-auto">
+        <div className="space-y-4 md:space-y-6">
           {/* Topic Info Card */}
           {topic && messages.length === 0 && (
-            <Card className="p-6 bg-gradient-to-r from-purple-900/30 to-pink-900/30 border-purple-500/30">
-              <div className="flex gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center text-3xl flex-shrink-0">
+            <Card className="p-4 md:p-6 bg-gradient-to-r from-purple-900/30 to-pink-900/30 border-purple-500/30">
+              <div className="flex gap-3 md:gap-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center text-2xl md:text-3xl flex-shrink-0">
                   {topic.emoji}
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-purple-300 mb-2">
+                  <h3 className="text-sm md:text-base font-semibold text-purple-300 mb-1 md:mb-2">
                     Conversation Context
                   </h3>
-                  <p className="text-sm text-gray-300 mb-3">{topic.description}</p>
+                  <p className="text-xs md:text-sm text-gray-300 mb-2 md:mb-3">{topic.description}</p>
                   {topic.exampleQuestions && topic.exampleQuestions.length > 0 && (
                     <div>
-                      <p className="text-xs text-purple-400 mb-2">Example questions:</p>
+                      <p className="text-[10px] md:text-xs text-purple-400 mb-1 md:mb-2">Example questions:</p>
                       <ul className="space-y-1">
                         {topic.exampleQuestions.slice(0, 3).map((question, index) => (
-                          <li key={index} className="text-xs text-gray-400 flex items-start gap-2">
+                          <li key={index} className="text-[10px] md:text-xs text-gray-400 flex items-start gap-2">
                             <span className="text-purple-400">•</span>
                             <span>{question}</span>
                           </li>
@@ -194,7 +194,7 @@ export default function ConversationPage() {
           )}
 
           {/* Messages */}
-          <Card className="min-h-[400px]">
+          <Card className="min-h-[300px] md:min-h-[400px]">
             <MessageList messages={messages} isLoading={isWaitingForAI} />
           </Card>
 
@@ -206,9 +206,9 @@ export default function ConversationPage() {
                 disabled={isWaitingForAI}
               />
               {isWaitingForAI && (
-                <div className="px-6 pb-6">
-                  <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 text-center">
-                    <p className="text-sm text-blue-400">
+                <div className="px-4 md:px-6 pb-4 md:pb-6">
+                  <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-3 md:p-4 text-center">
+                    <p className="text-xs md:text-sm text-blue-400">
                       {isSendingMessage
                         ? 'Transcribing your message...'
                         : 'AI is thinking...'}
@@ -221,22 +221,26 @@ export default function ConversationPage() {
 
           {/* Completed State */}
           {isCompleted && (
-            <Card className="p-8 text-center bg-gradient-to-br from-green-900/20 to-green-800/20 border-green-500/30">
-              <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">
+            <Card className="p-6 md:p-8 text-center bg-gradient-to-br from-green-900/20 to-green-800/20 border-green-500/30">
+              <CheckCircle className="w-12 h-12 md:w-16 md:h-16 text-green-400 mx-auto mb-3 md:mb-4" />
+              <h3 className="text-lg md:text-xl font-bold text-white mb-2">
                 Conversation Completed!
               </h3>
-              <p className="text-gray-400 mb-6">
+              <p className="text-sm md:text-base text-gray-400 mb-4 md:mb-6">
                 Great job! You earned {conversation.xpEarned} XP
               </p>
-              <div className="flex gap-3 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button
                   variant="secondary"
                   onClick={() => router.push('/topics')}
+                  className="w-full sm:w-auto"
                 >
                   Start New Conversation
                 </Button>
-                <Button onClick={() => router.push('/dashboard')}>
+                <Button
+                  onClick={() => router.push('/dashboard')}
+                  className="w-full sm:w-auto"
+                >
                   View Dashboard
                 </Button>
               </div>

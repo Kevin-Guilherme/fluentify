@@ -6,13 +6,25 @@ import {
   ConversationHistoryDto,
   ConversationHistoryItemDto,
 } from './dto/conversation-history.dto';
-import { User, ConversationStatus } from '@prisma/client';
+import {
+  UserProgressDto,
+  LevelUpResult,
+} from './dto/user-progress.dto';
+import { User, ConversationStatus, UserLevel } from '@prisma/client';
 import { BusinessException } from '../../shared/exceptions/business.exception';
 import { MappedsReturnsEnum } from '../../shared/enums/mapped-returns.enum';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
+
+  // XP thresholds for each level
+  private readonly LEVEL_THRESHOLDS = {
+    [UserLevel.BEGINNER]: 0,
+    [UserLevel.INTERMEDIATE]: 1000,
+    [UserLevel.ADVANCED]: 5000,
+    [UserLevel.FLUENT]: 15000,
+  };
 
   constructor(private prisma: PrismaService) {}
 
@@ -233,5 +245,117 @@ export class UserService {
         lastActiveAt: now,
       },
     });
+  }
+
+  /**
+   * Get user progress towards next level
+   */
+  async getUserProgress(userId: string): Promise<UserProgressDto> {
+    const user = await this.getUserById(userId);
+
+    const currentLevel = user.level;
+    const currentXP = user.xp;
+    const nextLevel = this.getNextLevel(currentLevel);
+    const nextLevelXP = nextLevel ? this.LEVEL_THRESHOLDS[nextLevel] : null;
+    const currentLevelXP = this.LEVEL_THRESHOLDS[currentLevel];
+
+    let progressPercentage = 0;
+    let xpToNextLevel = null;
+
+    if (nextLevelXP !== null) {
+      const xpInCurrentLevel = currentXP - currentLevelXP;
+      const xpNeededForNextLevel = nextLevelXP - currentLevelXP;
+      progressPercentage = Math.min(
+        100,
+        Math.floor((xpInCurrentLevel / xpNeededForNextLevel) * 100),
+      );
+      xpToNextLevel = nextLevelXP - currentXP;
+    } else {
+      // Already at max level
+      progressPercentage = 100;
+    }
+
+    return {
+      currentXP,
+      currentLevel,
+      nextLevel,
+      nextLevelXP,
+      progressPercentage,
+      xpToNextLevel,
+    };
+  }
+
+  /**
+   * Check if user should level up and update level if needed
+   * Returns level up result
+   */
+  async checkLevelUp(userId: string): Promise<LevelUpResult> {
+    const user = await this.getUserById(userId);
+
+    const previousLevel = user.level;
+    const currentXP = user.xp;
+    const newLevel = this.calculateLevelFromXP(currentXP);
+
+    if (newLevel !== previousLevel) {
+      // User leveled up!
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          level: newLevel,
+        },
+      });
+
+      this.logger.log(
+        `User ${userId} leveled up: ${previousLevel} → ${newLevel} (XP: ${currentXP})`,
+      );
+
+      return {
+        leveledUp: true,
+        newLevel,
+        previousLevel,
+        currentXP,
+      };
+    }
+
+    return {
+      leveledUp: false,
+      newLevel: null,
+      previousLevel,
+      currentXP,
+    };
+  }
+
+  /**
+   * Helper: Calculate level based on XP
+   */
+  private calculateLevelFromXP(xp: number): UserLevel {
+    if (xp >= this.LEVEL_THRESHOLDS[UserLevel.FLUENT]) {
+      return UserLevel.FLUENT;
+    } else if (xp >= this.LEVEL_THRESHOLDS[UserLevel.ADVANCED]) {
+      return UserLevel.ADVANCED;
+    } else if (xp >= this.LEVEL_THRESHOLDS[UserLevel.INTERMEDIATE]) {
+      return UserLevel.INTERMEDIATE;
+    } else {
+      return UserLevel.BEGINNER;
+    }
+  }
+
+  /**
+   * Helper: Get next level
+   */
+  private getNextLevel(currentLevel: UserLevel): UserLevel | null {
+    const levelOrder = [
+      UserLevel.BEGINNER,
+      UserLevel.INTERMEDIATE,
+      UserLevel.ADVANCED,
+      UserLevel.FLUENT,
+    ];
+
+    const currentIndex = levelOrder.indexOf(currentLevel);
+    if (currentIndex === -1 || currentIndex === levelOrder.length - 1) {
+      return null; // Already at max level
+    }
+
+    return levelOrder[currentIndex + 1];
   }
 }
