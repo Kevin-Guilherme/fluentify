@@ -68,6 +68,94 @@ FASE 6 (Testes & Polish)
   6.1 E2E  6.2 Bug Fixes
 ```
 
+---
+
+## 📊 Status Atual do Projeto
+
+**Última atualização:** 12 de Fevereiro de 2026
+
+### ✅ Completado (MVP Funcional)
+
+**Backend:**
+- ✅ Autenticação Supabase (SupabaseAuthGuard com ECC JWT)
+- ✅ Auth Module com sync de usuário local
+- ✅ User Module com CRUD completo
+- ✅ Conversation Module com orquestração de IA
+- ✅ Groq LLM Service (Llama 3.3 70B)
+- ✅ Groq Feedback Service (análise de conversas)
+- ✅ Storage Service (local + preparado para R2)
+- ✅ Topics Module com seed de exemplos
+- ✅ Sistema de XP e Level
+- ✅ Sistema de Streak
+- ✅ Gamificação completa
+- ✅ Exception handling com BusinessException
+- ✅ Swagger docs completo
+
+**Frontend:**
+- ✅ Design System (tema dark + paleta de cores)
+- ✅ Layout com Sidebar + Header
+- ✅ Auth Pages (Login/Signup com Supabase)
+- ✅ Dashboard com stats cards
+- ✅ Topics Page
+- ✅ Conversation Page (texto)
+- ✅ Feedback Modal
+- ✅ Profile Page
+- ✅ Onboarding Flow (3 steps)
+- ✅ API Client com Bearer token automático
+- ✅ React Query cache management
+- ✅ Responsive mobile
+
+### 🚧 Em Progresso
+
+- 🔄 **Audio Implementation** (postponed - MVP usa texto)
+  - Groq STT (Whisper) existe mas não está integrado
+  - AudioRecorder component existe mas não está em uso
+  - Planejado para v1.1
+
+### 📝 Próximas Implementações
+
+**Fase 2 - IA (Pendentes):**
+- [ ] 2.1 Groq STT integration (áudio → texto)
+- [ ] 2.4 RAG Service (Upstash Vector)
+- [ ] 2.6 Testes de integração IA
+
+**Fase 5 - Deploy:**
+- [ ] 5.1 Deploy Backend (Fly.io)
+- [ ] 5.2 Deploy Frontend (Vercel)
+- [ ] 5.3 CI/CD (GitHub Actions)
+- [ ] 5.4 Monitoring (Sentry)
+- [ ] 5.5 Performance optimization
+
+**Fase 6 - Testes & Polish:**
+- [ ] 6.1 E2E Testing
+- [ ] 6.2 Bug fixes e polish
+
+### 🐛 Bugs Corrigidos Nesta Sessão
+
+1. **401 Unauthorized** - Guards locais sobrescrevendo guard global ✅
+2. **400 Bad Request (Onboarding)** - Enum case sensitivity ✅
+3. **500 Internal Server Error (Conversation)** - @CurrentUser decorator bug ✅
+4. **Onboarding Loop** - React Query cache stale ✅
+5. **IA Infinita "Thinking"** - Missing AI orchestration ✅
+
+### 🎯 MVP v1.0 Status
+
+**Funcionalidades Essenciais:** ✅ 100% Completo
+- Criar conta e login ✅
+- Iniciar conversação ✅
+- Enviar mensagens (texto) ✅
+- IA responde com Groq LLM ✅
+- Feedback detalhado ✅
+- Sistema XP e Level ✅
+- Sistema Streak ✅
+- Dashboard com stats ✅
+- Histórico de conversas ✅
+
+**Pronto para:** Testes beta com usuários reais (texto)
+**Próximo marco:** Deploy em produção (Vercel + Fly.io)
+
+---
+
 ### Tabela de Sessões Recomendadas
 
 | Sessão | Fase | Tasks | Horas | Foco |
@@ -698,7 +786,7 @@ backend/test/app.e2e-spec.ts
 
 ---
 
-### FASE 2: Integrações IA (25h)
+### FASE 2: Integrações IA (25h) - 🔄 PARCIAL (LLM + Orquestração ✅)
 
 #### - [ ] 2.1 Groq STT Service (Whisper)
 **Descrição:** Transcrição de áudio usando Groq Whisper large-v3-turbo.
@@ -720,7 +808,7 @@ backend/src/infrastructure/external/groq/groq.client.ts
 - Retry automático em caso de rate limit
 - BusinessException(GROQ_TRANSCRIPTION_FAILED) em caso de falha
 
-#### - [ ] 2.2 Groq LLM Service (Llama 3.3)
+#### - [x] 2.2 Groq LLM Service (Llama 3.3)
 **Descrição:** Geração de respostas conversacionais com Llama 3.3 70B.
 **Arquivos:**
 ```
@@ -803,8 +891,9 @@ backend/src/modules/rag/seed-examples.ts
 - Seed popula 50+ exemplos
 - Fallback silencioso se RAG falhar (não bloqueia conversa)
 
-#### - [ ] 2.5 Orquestração de Conversa
+#### - [x] 2.5 Orquestração de Conversa
 **Descrição:** Integrar STT + LLM + RAG + Feedback no fluxo de conversa.
+**Status:** Implementado para texto. STT e RAG postponed para v1.1.
 **Arquivos:**
 ```
 backend/src/modules/conversation/conversation.service.ts (atualizar)
@@ -850,9 +939,9 @@ backend/src/modules/rag/rag.service.spec.ts
 
 ---
 
-### FASE 3: Frontend (30h)
+### FASE 3: Frontend (30h) - ✅ COMPLETA
 
-#### - [ ] 3.1 Design System & CSS Variables
+#### - [x] 3.1 Design System & CSS Variables
 **Descrição:** Configurar CSS variables, tokens de design, tema dark/light no globals.css.
 **Arquivos:**
 ```
@@ -872,7 +961,7 @@ frontend/lib/constants.ts
 - Todas as CSS variables do design system configuradas
 - Fonts carregadas corretamente
 
-#### - [ ] 3.2 Layout Principal (Sidebar + Header)
+#### - [x] 3.2 Layout Principal (Sidebar + Header)
 **Descrição:** Layout com sidebar fixa, header sticky e área de conteúdo.
 **Arquivos:**
 ```
@@ -893,7 +982,7 @@ frontend/app/(protected)/layout.tsx
 - Responsivo nos 3 breakpoints
 - Transições suaves ao colapsar sidebar
 
-#### - [ ] 3.3 Auth Pages (Login/Signup)
+#### - [x] 3.3 Auth Pages (Login/Signup)
 **Descrição:** Páginas de login e cadastro com Supabase Auth.
 **Arquivos:**
 ```
@@ -921,7 +1010,7 @@ frontend/middleware.ts
 - Loading states durante auth
 - Mensagens de erro claras
 
-#### - [ ] 3.4 Dashboard Page
+#### - [x] 3.4 Dashboard Page
 **Descrição:** Dashboard com stats, progresso semanal e ações rápidas.
 **Arquivos:**
 ```
@@ -944,7 +1033,7 @@ frontend/components/dashboard/quick-actions.tsx
 - Empty state se não houver dados
 - Cards com gradientes conforme design system
 
-#### - [ ] 3.5 Topics Page
+#### - [x] 3.5 Topics Page
 **Descrição:** Grid de tópicos/cenários disponíveis para prática.
 **Arquivos:**
 ```
@@ -965,8 +1054,9 @@ frontend/components/topics/topic-filter.tsx
 - Hover state com scale(1.05)
 - Click redireciona para /conversation/[id]
 
-#### - [ ] 3.6 Conversation Page
+#### - [x] 3.6 Conversation Page
 **Descrição:** Página principal de conversação com áudio recording e chat.
+**Status:** Implementado com texto. Audio postponed para v1.1.
 **Arquivos:**
 ```
 frontend/app/(protected)/conversation/[id]/page.tsx
@@ -1021,7 +1111,7 @@ export function useAudioRecorder() {
 - Auto-scroll para última mensagem
 - Loading state enquanto IA responde
 
-#### - [ ] 3.7 Feedback Modal
+#### - [x] 3.7 Feedback Modal
 **Descrição:** Modal com feedback detalhado após completar conversa.
 **Arquivos:**
 ```
@@ -1045,7 +1135,7 @@ frontend/components/conversation/score-display.tsx
 - XP earned com animação de +XP
 - Responsivo
 
-#### - [ ] 3.8 Profile Page
+#### - [x] 3.8 Profile Page
 **Descrição:** Página de perfil com stats detalhados e histórico.
 **Arquivos:**
 ```
@@ -1068,7 +1158,7 @@ frontend/components/profile/conversation-history.tsx
 - Histórico paginado com infinite scroll
 - Level progress bar mostra progresso para próximo nível
 
-#### - [ ] 3.9 API Client & React Query Setup
+#### - [x] 3.9 API Client & React Query Setup
 **Descrição:** API client centralizado com Bearer token automático + React Query provider.
 **Arquivos:**
 ```
@@ -1170,7 +1260,7 @@ export const api = new ApiClient();
 
 ---
 
-### FASE 4: Gamificação & Polish (12h)
+### FASE 4: Gamificação & Polish (12h) - ✅ COMPLETA
 
 #### - [x] 4.1 Sistema XP & Level
 **Descrição:** Cálculo de XP, progressão de nível e notificações de level-up.
