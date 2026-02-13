@@ -15,16 +15,16 @@ export default function Home() {
 
         <div className="flex gap-4 justify-center">
           <a
-            href="/login"
+            href="/signup"
             className="px-8 py-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl font-bold text-white hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300"
           >
             Get Started
           </a>
           <a
-            href="/dashboard"
+            href="/login"
             className="px-8 py-4 bg-slate-800 border border-slate-700 rounded-xl font-semibold text-gray-200 hover:bg-slate-700 hover:border-slate-600 hover:scale-105 transition-all duration-300"
           >
-            View Demo
+            Sign In
           </a>
         </div>
       </div>

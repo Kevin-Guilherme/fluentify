@@ -39,7 +39,15 @@ async function fetchApi<T>(
       );
     }
 
-    return response.json();
+    const jsonData = await response.json();
+
+    // Backend wraps responses in { success, data, timestamp }
+    // Extract the data field if present
+    if (jsonData && typeof jsonData === 'object' && 'data' in jsonData) {
+      return jsonData.data as T;
+    }
+
+    return jsonData;
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;

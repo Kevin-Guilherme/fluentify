@@ -6,12 +6,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { conversationsApi } from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { MessageList } from '@/components/conversation/message-list';
-import { AudioRecorder } from '@/components/conversation/audio-recorder';
 import { FeedbackModal } from '@/components/conversation/feedback-modal';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, Loader2, Send } from 'lucide-react';
 import { Message } from '@/types';
+import { api } from '@/lib/api/client';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -21,6 +21,7 @@ export default function ConversationPage() {
 
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [messageText, setMessageText] = useState('');
 
   // Fetch conversation data
   const {
@@ -50,15 +51,24 @@ export default function ConversationPage() {
     },
   });
 
-  // Handle audio recording completion
-  const handleRecordingComplete = useCallback(
-    async (audioBlob: Blob) => {
-      if (!conversationId) return;
+  // Handle text message send
+  const handleSendMessage = useCallback(
+    async (e?: React.FormEvent) => {
+      e?.preventDefault();
+
+      if (!conversationId || !messageText.trim()) return;
 
       setIsSendingMessage(true);
 
       try {
-        await conversationsApi.sendMessage(conversationId, audioBlob);
+        // Send text message
+        await api.post(`/conversations/${conversationId}/messages`, {
+          content: messageText.trim(),
+        });
+
+        // Clear input
+        setMessageText('');
+
         // Refetch conversation to get updated messages
         await queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
       } catch (error) {
@@ -68,7 +78,7 @@ export default function ConversationPage() {
         setIsSendingMessage(false);
       }
     },
-    [conversationId, queryClient]
+    [conversationId, messageText, queryClient]
   );
 
   // Handle complete conversation
@@ -198,19 +208,39 @@ export default function ConversationPage() {
             <MessageList messages={messages} isLoading={isWaitingForAI} />
           </Card>
 
-          {/* Audio Recorder */}
+          {/* Text Input */}
           {!isCompleted && (
-            <Card className="border-slate-700">
-              <AudioRecorder
-                onRecordingComplete={handleRecordingComplete}
-                disabled={isWaitingForAI}
-              />
+            <Card className="border-slate-700 p-4 md:p-6">
+              <form onSubmit={handleSendMessage} className="flex gap-3">
+                <input
+                  type="text"
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Type your message..."
+                  disabled={isWaitingForAI}
+                  className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <Button
+                  type="submit"
+                  disabled={isWaitingForAI || !messageText.trim()}
+                  className="gap-2 px-6"
+                >
+                  {isSendingMessage ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5" />
+                      <span className="hidden sm:inline">Send</span>
+                    </>
+                  )}
+                </Button>
+              </form>
               {isWaitingForAI && (
-                <div className="px-4 md:px-6 pb-4 md:pb-6">
+                <div className="mt-4">
                   <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-3 md:p-4 text-center">
                     <p className="text-xs md:text-sm text-blue-400">
                       {isSendingMessage
-                        ? 'Transcribing your message...'
+                        ? 'Sending your message...'
                         : 'AI is thinking...'}
                     </p>
                   </div>

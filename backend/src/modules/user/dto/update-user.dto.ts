@@ -1,11 +1,6 @@
 import { IsOptional, IsString, MaxLength, IsBoolean, IsEnum } from 'class-validator';
-
-enum UserLevel {
-  BEGINNER = 'beginner',
-  INTERMEDIATE = 'intermediate',
-  ADVANCED = 'advanced',
-  FLUENT = 'fluent',
-}
+import { Transform } from 'class-transformer';
+import { UserLevel } from '@prisma/client';
 
 export class UpdateUserDto {
   @IsString()
@@ -19,7 +14,8 @@ export class UpdateUserDto {
 
   @IsEnum(UserLevel)
   @IsOptional()
-  level?: string;
+  @Transform(({ value }) => value?.toUpperCase())
+  level?: UserLevel;
 
   @IsString()
   @IsOptional()

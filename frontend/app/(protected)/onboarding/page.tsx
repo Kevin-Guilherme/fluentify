@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StepName } from '@/components/onboarding/step-name';
 import { StepLevel } from '@/components/onboarding/step-level';
@@ -17,6 +18,7 @@ interface OnboardingData {
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [data, setData] = useState<OnboardingData>({
@@ -50,10 +52,13 @@ export default function OnboardingPage() {
       // Update user profile via PATCH /users/me
       await api.patch('/users/me', {
         name: finalData.name,
-        level: finalData.level,
+        level: finalData.level.toUpperCase(), // Convert to UPPERCASE for enum
         goal: finalData.goal,
         onboardingCompleted: true,
       });
+
+      // Invalidate user-profile cache to force refetch with updated data
+      await queryClient.invalidateQueries({ queryKey: ['user-profile'] });
 
       // Redirect to dashboard
       router.push('/dashboard');

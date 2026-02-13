@@ -1,7 +1,6 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { Public } from '../../shared/decorators/public.decorator';
 import { SyncUserDto } from './dto/sync-user.dto';
@@ -18,7 +17,6 @@ export class AuthController {
    * Called after login/signup on frontend
    */
   @Post('sync')
-  @UseGuards(JwtAuthGuard)
   async syncUser(
     @CurrentUser() user: any,
     @Body() syncData: SyncUserDto,
@@ -38,7 +36,6 @@ export class AuthController {
    * Get current authenticated user
    */
   @Get('me')
-  @UseGuards(JwtAuthGuard)
   async getMe(@CurrentUser() user: any): Promise<AuthResponseDto> {
     const dbUser = await this.authService.getUserBySupabaseId(user.supabaseId);
 

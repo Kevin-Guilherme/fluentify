@@ -2,10 +2,10 @@ import { api } from './client';
 import { User, UserStats } from '@/types';
 
 export const usersApi = {
-  getProfile: () => api.get<User>('/users/profile'),
+  getProfile: () => api.get<User>('/users/me'),
 
-  getStats: () => api.get<UserStats>('/users/stats'),
+  getStats: () => api.get<UserStats>('/users/me/stats'),
 
   updateProfile: (data: Partial<User>) =>
-    api.put<User>('/users/profile', data),
+    api.patch<User>('/users/me', data),
 };

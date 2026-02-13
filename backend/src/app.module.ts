@@ -12,7 +12,7 @@ import { ConversationModule } from './modules/conversation/conversation.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { TopicModule } from './modules/topic/topic.module';
 import { GroqModule } from './modules/groq/groq.module';
-import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { SupabaseAuthGuard } from './modules/auth/guards/supabase-auth.guard';
 
 @Module({
   imports: [
@@ -37,7 +37,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     AppService,
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard,
+      useClass: SupabaseAuthGuard,
     },
   ],
 })

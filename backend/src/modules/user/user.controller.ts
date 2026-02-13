@@ -4,13 +4,11 @@ import {
   Get,
   Patch,
   Query,
-  UseGuards,
   ParseIntPipe,
   DefaultValuePipe,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserStatsDto } from './dto/user-stats.dto';
@@ -21,7 +19,6 @@ import { User } from '@prisma/client';
 @ApiTags('users')
 @ApiBearerAuth('JWT')
 @Controller('users')
-@UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(private userService: UserService) {}
 

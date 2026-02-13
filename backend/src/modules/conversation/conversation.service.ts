@@ -18,6 +18,7 @@ import {
 } from './dto/conversation-response.dto';
 import { CompleteConversationResponseDto } from './dto/complete-conversation.dto';
 import { GroqFeedbackService } from '../groq/feedback/groq-feedback.service';
+import { GroqLlmService } from '../groq/llm/groq-llm.service';
 import { XpCalculatorService } from '../gamification/xp-calculator.service';
 import { StreakService } from '../user/streak.service';
 import { UserService } from '../user/user.service';
@@ -29,6 +30,7 @@ export class ConversationService {
   constructor(
     private prisma: PrismaService,
     private groqFeedback: GroqFeedbackService,
+    private groqLlm: GroqLlmService,
     private xpCalculator: XpCalculatorService,
     private streakService: StreakService,
     private userService: UserService,
@@ -124,7 +126,7 @@ export class ConversationService {
   }
 
   /**
-   * Send text message
+   * Send text message and get AI response
    */
   async sendMessage(
     conversationId: string,
@@ -141,8 +143,24 @@ export class ConversationService {
       );
     }
 
+    // Get user info for AI context
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        level: true,
+        name: true,
+      },
+    });
+
+    if (!user) {
+      throw new BusinessException(
+        MappedsReturnsEnum.USER_NOT_FOUND,
+        'User not found',
+      );
+    }
+
     // Create user message
-    const message = await this.prisma.message.create({
+    const userMessage = await this.prisma.message.create({
       data: {
         conversationId,
         role: MessageRole.USER,
@@ -151,10 +169,41 @@ export class ConversationService {
     });
 
     this.logger.log(
-      `Message sent in conversation ${conversationId}: ${data.content.substring(0, 50)}...`,
+      `User message sent in conversation ${conversationId}: ${data.content.substring(0, 50)}...`,
     );
 
-    return this.mapToMessageResponse(message);
+    // Build conversation history for AI (exclude SYSTEM messages for Groq)
+    const conversationHistory = [...conversation.messages, userMessage]
+      .filter((m) => m.role !== MessageRole.SYSTEM)
+      .map((m) => ({
+        role: m.role.toLowerCase() as 'user' | 'assistant',
+        content: m.content,
+      }));
+
+    // Generate AI response
+    this.logger.log(`Generating AI response for conversation ${conversationId}...`);
+    const aiResponse = await this.groqLlm.generateResponse(
+      conversationHistory as any,
+      user.level as UserLevel,
+      conversation.topicTitle,
+      user.name,
+    );
+
+    // Save AI response
+    const assistantMessage = await this.prisma.message.create({
+      data: {
+        conversationId,
+        role: MessageRole.ASSISTANT,
+        content: aiResponse,
+      },
+    });
+
+    this.logger.log(
+      `AI response generated in conversation ${conversationId}: ${aiResponse.substring(0, 50)}...`,
+    );
+
+    // Return AI message so frontend can display it immediately
+    return this.mapToMessageResponse(assistantMessage);
   }
 
   /**
