@@ -35,7 +35,7 @@ export class GroqLlmService {
     topic: string,
     userName?: string,
   ): Promise<string> {
-    try {
+    return this.retryWithBackoff(async () => {
       // Construir system prompt baseado no nível do usuário
       const systemPrompt = buildConversationPrompt(userLevel, topic, userName);
 
@@ -52,7 +52,10 @@ export class GroqLlmService {
         messages: messageList,
         model: 'llama-3.3-70b-versatile',
         temperature: 0.7,
-        max_tokens: 500,
+        max_tokens: 150, // Respostas curtas (50 palavras ~= 75 tokens)
+        top_p: 1,
+        frequency_penalty: 0.2, // Evitar repetição de palavras
+        presence_penalty: 0.1, // Incentivar novos tópicos
       });
 
       const response = chatCompletion.choices[0]?.message?.content || '';
@@ -63,12 +66,50 @@ export class GroqLlmService {
 
       this.logger.log('LLM response generated successfully');
       return response;
-    } catch (error) {
-      this.logger.error('LLM generation failed', error);
-      throw new BusinessException(
-        MappedsReturnsEnum.GROQ_API_ERROR,
-        'Failed to generate response',
-      );
+    });
+  }
+
+  /**
+   * Retry logic com backoff exponencial para rate limiting
+   */
+  private async retryWithBackoff<T>(
+    operation: () => Promise<T>,
+    maxRetries = 3,
+  ): Promise<T> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error: any) {
+        const isRateLimitError =
+          error?.status === 429 ||
+          error?.message?.toLowerCase().includes('rate limit');
+
+        if (isRateLimitError && attempt < maxRetries) {
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+          this.logger.warn(
+            `Rate limited (429), retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`,
+          );
+          await this.delay(delay);
+        } else if (attempt === maxRetries || !isRateLimitError) {
+          this.logger.error('LLM generation failed', error);
+          throw new BusinessException(
+            MappedsReturnsEnum.GROQ_API_ERROR,
+            'Failed to generate response',
+          );
+        }
+      }
     }
+
+    throw new BusinessException(
+      MappedsReturnsEnum.GROQ_API_ERROR,
+      'Max retries exceeded',
+    );
+  }
+
+  /**
+   * Helper: delay function
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
